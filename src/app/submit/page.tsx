@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { ArrowRight, CheckCircle, Loader2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -23,7 +23,8 @@ export default function SubmitPage() {
 
   useEffect(() => {
     async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const supabaseClient = createClient();
+   const { data: { user } } = await supabaseClient.auth.getUser();
       setUser(user);
       setCheckingAuth(false);
     }
@@ -46,7 +47,8 @@ export default function SubmitPage() {
     setError('');
 
     try {
-      const { error: insertError } = await supabase
+      const supabaseClient = createClient();
+  const { error: insertError } = await supabaseClient
         .from('suggestions')
         .insert([
           {

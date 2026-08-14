@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { Tool } from '@/types';
 import ToolCard from '@/components/cards/ToolCard';
 import FilterBar from '@/components/FilterBar';
@@ -39,7 +39,8 @@ export default function Home() {
 
   async function fetchTools() {
     try {
-      const { data, error } = await supabase
+      const supabaseClient = createClient();
+   const { data, error } = await supabaseClient
         .from('tools')
         .select('*')
         .order('created_at', { ascending: false });
