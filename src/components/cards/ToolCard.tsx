@@ -74,7 +74,7 @@ export default function ToolCard({ tool, reviewCount = 0, avgRating = 0 }: ToolC
             التفاصيل
           </Link>
           <a
-            href={tool.url}
+            href={tool.id}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
