@@ -14,7 +14,22 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState<any>(null);
 
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await createClient().auth.getUser();
+      setUser(user);
+    }
+    getUser();
+  }, []);
+
+  async function handleLogout() {
+    await createClient().auth.signOut();
+    setUser(null);
+    window.location.reload();
+  }
+  
   useEffect(() => {
     fetchTools();
   }, []);
