@@ -87,7 +87,6 @@ export default function SubmitPage() {
           <h2 className="text-2xl font-bold text-slate-900 mb-2">تسجيل الدخول مطلوب</h2>
           <p className="text-slate-500 mb-6">يجب تسجيل الدخول لإضافة أدوات جديدة للمجتمع</p>
           <div className="flex gap-3 justify-center">
-            <Link
               <Link href={`/login?redirect=${encodeURIComponent('/submit')}`}
               className="bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
             >
