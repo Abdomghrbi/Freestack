@@ -7,7 +7,7 @@ import { Star, ExternalLink, ThumbsUp, Loader2, MessageCircle } from 'lucide-rea
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-// كابتشا بسيطة مدمجة (لو ما عندك الملف المنفصل)
+
 function SimpleCaptcha({ onValidate }: { onValidate: (isValid: boolean) => void }) {
   const [num1, setNum1] = useState(0);
   const [num2, setNum2] = useState(0);
@@ -127,14 +127,21 @@ export default function ToolDetailPage() {
         },
       ]);
 
-      if (error) throw error;
+  
+          if (error) {
+        console.error('Review insert error:', error);
+        alert('خطأ: ' + error.message);
+        throw error;
+      }
 
       setReviewForm({ rating: 5, comment: '' });
       setSubmitted(true);
       fetchToolAndReviews();
       setTimeout(() => setSubmitted(false), 3000);
-    } catch (err) {
+        } catch (err: any) {
       console.error(err);
+      alert('حدث خطأ: ' + (err?.message || 'غير معروف'));
+    }
     } finally {
       setSubmitting(false);
     }
