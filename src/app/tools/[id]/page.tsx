@@ -138,11 +138,10 @@ export default function ToolDetailPage() {
       setSubmitted(true);
       fetchToolAndReviews();
       setTimeout(() => setSubmitted(false), 3000);
-        } catch (err: any) {
+      } catch (err: any) {
       console.error(err);
       alert('حدث خطأ: ' + (err?.message || 'غير معروف'));
-    }
-    } finally {
+      } finally {
       setSubmitting(false);
     }
   }
