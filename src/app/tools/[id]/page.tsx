@@ -123,8 +123,8 @@ export default function ToolDetailPage() {
           tool_id: id,
           rating: reviewForm.rating,
           comment: reviewForm.comment || null,
-          user_id: '00000000-0000-0000-0000-000000000000',
-        },
+          user_id: null,
+                  },
       ]);
 
   
