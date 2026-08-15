@@ -1,19 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // الرابط يلي رح يرجع له بعد تسجيل الدخول
+  const redirectTo = searchParams.get('redirect') || '/';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,7 +39,8 @@ export default function LoginPage() {
         if (error) throw error;
       }
 
-      router.push('/');
+      // إعادة التوجيه للصفحة يلي كان فيها
+      router.push(redirectTo);
       router.refresh();
     } catch (err: any) {
       setError(err.message || 'حدث خطأ');
@@ -121,11 +126,23 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-4 text-center">
-          <Link href="/" className="text-sm text-slate-400 hover:text-slate-600">
-            ← العودة للرئيسية
+          <Link href={redirectTo} className="text-sm text-slate-400 hover:text-slate-600">
+            ← العودة
           </Link>
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
