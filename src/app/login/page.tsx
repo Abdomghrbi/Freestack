@@ -16,7 +16,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  // الرابط يلي رح يرجع له بعد تسجيل الدخول
+  
   const redirectTo = searchParams.get('redirect') || '/';
 
   async function handleSubmit(e: React.FormEvent) {
@@ -39,7 +39,7 @@ function LoginForm() {
         if (error) throw error;
       }
 
-      // إعادة التوجيه للصفحة يلي كان فيها
+      
       router.push(redirectTo);
       router.refresh();
     } catch (err: any) {
