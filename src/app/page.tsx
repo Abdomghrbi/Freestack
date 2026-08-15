@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Tool } from '@/types';
 import ToolCard from '@/components/cards/ToolCard';
 import FilterBar from '@/components/FilterBar';
-import { LogOut, User, Search, Zap, Plus } from 'lucide-react';
+import { LogOut, Search, Zap, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -29,7 +29,7 @@ export default function Home() {
     setUser(null);
     window.location.reload();
   }
-  
+
   useEffect(() => {
     fetchTools();
   }, []);
@@ -55,7 +55,7 @@ export default function Home() {
   async function fetchTools() {
     try {
       const supabaseClient = createClient();
-   const { data, error } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('tools')
         .select('*')
         .order('created_at', { ascending: false });
@@ -69,21 +69,7 @@ export default function Home() {
       setLoading(false);
     }
   }
-const [user, setUser] = useState<any>(null);
 
-useEffect(() => {
-  async function getUser() {
-    const { data: { user } } = await createClient().auth.getUser();
-    setUser(user);
-  }
-  getUser();
-}, []);
-
-async function handleLogout() {
-  await createClient().auth.signOut();
-  setUser(null);
-  router.refresh();
-}
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -99,7 +85,7 @@ async function handleLogout() {
                 <p className="text-xs text-slate-500">أدوات مجانية مجتمعية</p>
               </div>
             </div>
-                        {user ? (
+            {user ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500 hidden sm:inline">{user.email}</span>
                 <button
