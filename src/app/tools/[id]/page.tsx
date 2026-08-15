@@ -5,9 +5,67 @@ import { createClient } from '@/lib/supabase/client';
 import { Tool, Review } from '@/types';
 import { Star, ExternalLink, ThumbsUp, Loader2, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import SimpleCaptcha from '@/components/captcha/SimpleCaptcha';
+import { useParams } from 'next/navigation';
 
-export default function ToolDetailPage({ params }: { params: { id: string } }) {
+// كابتشا بسيطة مدمجة (لو ما عندك الملف المنفصل)
+function SimpleCaptcha({ onValidate }: { onValidate: (isValid: boolean) => void }) {
+  const [num1, setNum1] = useState(0);
+  const [num2, setNum2] = useState(0);
+  const [answer, setAnswer] = useState('');
+  const [isValid, setIsValid] = useState(false);
+
+  function generateQuestion() {
+    const n1 = Math.floor(Math.random() * 10) + 1;
+    const n2 = Math.floor(Math.random() * 10) + 1;
+    setNum1(n1);
+    setNum2(n2);
+    setAnswer('');
+    setIsValid(false);
+    onValidate(false);
+  }
+
+  useEffect(() => {
+    generateQuestion();
+  }, []);
+
+  function checkAnswer(value: string) {
+    setAnswer(value);
+    const correct = parseInt(value) === num1 + num2;
+    setIsValid(correct);
+    onValidate(correct);
+  }
+
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-slate-700">تحقق بسيط</span>
+        <button
+          type="button"
+          onClick={generateQuestion}
+          className="text-slate-400 hover:text-slate-600 transition-colors text-xs"
+        >
+          تحديث
+        </button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-lg font-bold text-slate-900">{num1} + {num2} = ?</span>
+        <input
+          type="number"
+          value={answer}
+          onChange={(e) => checkAnswer(e.target.value)}
+          className="w-20 px-3 py-2 bg-white border border-slate-200 rounded-lg text-center text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          placeholder="؟"
+        />
+        {isValid && <span className="text-emerald-600 text-sm font-medium">✓ صحيح</span>}
+      </div>
+    </div>
+  );
+}
+
+export default function ToolDetailPage() {
+  const params = useParams();
+  const id = params?.id as string;
+
   const [tool, setTool] = useState<Tool | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,8 +75,10 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    fetchToolAndReviews();
-  }, [params.id]);
+    if (id) {
+      fetchToolAndReviews();
+    }
+  }, [id]);
 
   async function fetchToolAndReviews() {
     try {
@@ -27,7 +87,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
       const { data: toolData, error: toolError } = await supabase
         .from('tools')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
       if (toolError) {
@@ -39,7 +99,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
       const { data: reviewsData } = await supabase
         .from('reviews')
         .select('*')
-        .eq('tool_id', params.id)
+        .eq('tool_id', id)
         .order('created_at', { ascending: false });
 
       setTool(toolData);
@@ -60,7 +120,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
       const supabase = createClient();
       const { error } = await supabase.from('reviews').insert([
         {
-          tool_id: params.id,
+          tool_id: id,
           rating: reviewForm.rating,
           comment: reviewForm.comment || null,
           user_id: '00000000-0000-0000-0000-000000000000',
@@ -102,6 +162,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center flex-col gap-4">
         <p className="text-slate-400 text-lg">الأداة غير موجودة</p>
+        <p className="text-xs text-slate-300">ID: {id || 'غير متوفر'}</p>
         <Link href="/" className="text-indigo-600 hover:underline">العودة للرئيسية</Link>
       </main>
     );
@@ -122,7 +183,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-slate-900">{tool.name}</h1>
                 <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
                   {tool.category}
@@ -132,14 +193,14 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6 flex-wrap">
             <div className="flex items-center gap-1">
               <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
               <span className="text-xl font-bold text-slate-900">{avgRating > 0 ? avgRating.toFixed(1) : '-'}</span>
               <span className="text-slate-400 text-sm">({reviews.length} تقييم)</span>
             </div>
             <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
-              {priceLabels[tool.price]}
+              {priceLabels[tool.price] || tool.price}
             </span>
           </div>
 
