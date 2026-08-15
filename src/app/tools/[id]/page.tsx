@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Tool, Review } from '@/types';
-import { Star, ArrowRight, ExternalLink, ThumbsUp, Loader2, MessageCircle } from 'lucide-react';
+import { Star, ExternalLink, ThumbsUp, Loader2, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import SimpleCaptcha from '@/components/captcha/SimpleCaptcha';
 
 export default function ToolDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
   const [tool, setTool] = useState<Tool | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,11 +22,19 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
 
   async function fetchToolAndReviews() {
     try {
-      const { data: toolData } = await supabase
+      const supabase = createClient();
+      
+      const { data: toolData, error: toolError } = await supabase
         .from('tools')
         .select('*')
         .eq('id', params.id)
         .single();
+
+      if (toolError) {
+        console.error('Tool error:', toolError);
+        setLoading(false);
+        return;
+      }
 
       const { data: reviewsData } = await supabase
         .from('reviews')
@@ -50,12 +57,13 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
 
     setSubmitting(true);
     try {
+      const supabase = createClient();
       const { error } = await supabase.from('reviews').insert([
         {
           tool_id: params.id,
           rating: reviewForm.rating,
           comment: reviewForm.comment || null,
-          user_id: '00000000-0000-0000-0000-000000000000', // anonymous
+          user_id: '00000000-0000-0000-0000-000000000000',
         },
       ]);
 
@@ -92,8 +100,9 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
 
   if (!tool) {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-slate-400">الأداة غير موجودة</p>
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center flex-col gap-4">
+        <p className="text-slate-400 text-lg">الأداة غير موجودة</p>
+        <Link href="/" className="text-indigo-600 hover:underline">العودة للرئيسية</Link>
       </main>
     );
   }
