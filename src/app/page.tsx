@@ -84,13 +84,41 @@ async function handleLogout() {
                 <p className="text-xs text-slate-500">أدوات مجانية مجتمعية</p>
               </div>
             </div>
-            <Link
-              href="/submit"
-              className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">اقترح أداة</span>
-            </Link>
+                        {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500 hidden sm:inline">{user.email}</span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-slate-600 hover:text-red-600 px-3 py-2 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">خروج</span>
+                </button>
+                <Link
+                  href="/submit"
+                  className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">اقترح أداة</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="text-sm text-slate-600 hover:text-slate-900 font-medium px-3 py-2"
+                >
+                  دخول
+                </Link>
+                <Link
+                  href="/submit"
+                  className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">اقترح أداة</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Search */}
