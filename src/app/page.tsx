@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Tool } from '@/types';
 import ToolCard from '@/components/cards/ToolCard';
 import FilterBar from '@/components/FilterBar';
-import { Search, Zap, Plus } from 'lucide-react';
+import { LogOut, User, Search, Zap, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -54,7 +54,21 @@ export default function Home() {
       setLoading(false);
     }
   }
+const [user, setUser] = useState<any>(null);
 
+useEffect(() => {
+  async function getUser() {
+    const { data: { user } } = await createClient().auth.getUser();
+    setUser(user);
+  }
+  getUser();
+}, []);
+
+async function handleLogout() {
+  await createClient().auth.signOut();
+  setUser(null);
+  router.refresh();
+}
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
