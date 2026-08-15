@@ -71,7 +71,6 @@ export default function SubmitPage() {
     }
   }
 
-  // لو عم بيتحقق من الـ auth
   if (checkingAuth) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -80,7 +79,6 @@ export default function SubmitPage() {
     );
   }
 
-  // لو مش مسجل دخول
   if (!user) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -90,7 +88,7 @@ export default function SubmitPage() {
           <p className="text-slate-500 mb-6">يجب تسجيل الدخول لإضافة أدوات جديدة للمجتمع</p>
           <div className="flex gap-3 justify-center">
             <Link
-              href="/login"
+              <Link href={`/login?redirect=${encodeURIComponent('/submit')}`}
               className="bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
             >
               تسجيل الدخول
@@ -107,7 +105,6 @@ export default function SubmitPage() {
     );
   }
 
-  // لو نجح الإرسال
   if (success) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -127,7 +124,6 @@ export default function SubmitPage() {
     );
   }
 
-  // الفورم العادي
   return (
     <main className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200">
