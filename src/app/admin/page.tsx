@@ -69,7 +69,7 @@ export default function AdminPage() {
     }
   }
 
-  async function approveSuggestion(suggestion: Suggestion) {
+    async function approveSuggestion(suggestion: Suggestion) {
     setActionLoading(suggestion.id);
     try {
       const supabase = createClient();
@@ -85,19 +85,26 @@ export default function AdminPage() {
         },
       ]);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        alert('خطأ بإضافة الأداة: ' + insertError.message);
+        throw insertError;
+      }
 
       // 2. تحديث حالة الاقتراح
-      await supabase
+      const { error: updateError } = await supabase
         .from('suggestions')
         .update({ status: 'approved' })
         .eq('id', suggestion.id);
 
+      if (updateError) {
+        alert('خطأ بتحديث الحالة: ' + updateError.message);
+        throw updateError;
+      }
+
       // 3. إزالة من القائمة
       setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('حدث خطأ أثناء الموافقة');
     } finally {
       setActionLoading(null);
     }
