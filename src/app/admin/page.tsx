@@ -39,7 +39,6 @@ export default function AdminPage() {
 
     setUser(user);
 
-    // التحقق من الدور
     const role = user.user_metadata?.role;
     if (role === 'admin') {
       setIsAdmin(true);
@@ -69,12 +68,11 @@ export default function AdminPage() {
     }
   }
 
-    async function approveSuggestion(suggestion: Suggestion) {
+  async function approveSuggestion(suggestion: Suggestion) {
     setActionLoading(suggestion.id);
     try {
       const supabase = createClient();
 
-      // 1. إضافة الأداة لـ tools
       const { error: insertError } = await supabase.from('tools').insert([
         {
           name: suggestion.name,
@@ -85,59 +83,51 @@ export default function AdminPage() {
         },
       ]);
 
-      if (insertError) {
-        alert('خطأ بإضافة الأداة: ' + insertError.message);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
 
-      // 2. تحديث حالة الاقتراح
-      const { error: updateError } = await supabase
+      await supabase
         .from('suggestions')
         .update({ status: 'approved' })
         .eq('id', suggestion.id);
 
-      if (updateError) {
-        alert('خطأ بتحديث الحالة: ' + updateError.message);
-        throw updateError;
-      }
-
-      // 3. إزالة من القائمة
       setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
+      alert('حدث خطأ أثناء الموافقة');
     } finally {
       setActionLoading(null);
     }
   }
 
-  async function rejectSuggestion(id: string) {
+    async function rejectSuggestion(id: string) {
     setActionLoading(id);
     try {
       const supabase = createClient();
-      await supabase
+      const { error } = await supabase
         .from('suggestions')
         .update({ status: 'rejected' })
         .eq('id', id);
 
+      if (error) {
+        alert('خطأ: ' + error.message);
+        throw error;
+      }
+
       setSuggestions((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error(err);
-      alert('حدث خطأ أثناء الرفض');
     } finally {
       setActionLoading(null);
     }
-  }
+    }
 
-  // لو عم بيتحقق
   if (checking) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
       </main>
     );
-  }
-
-  // لو مش مسجل دخول
+  
   if (!user) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -157,14 +147,13 @@ export default function AdminPage() {
     );
   }
 
-  // لو مسجل دخول بس مش مشرف
   if (!isAdmin) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
           <Shield className="w-16 h-16 text-red-300 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-slate-900 mb-2">وصول مرفوض</h2>
-          <p className="text-slate-500 mb-6">ليس لديك صلاحية الوصول لهذه الصفحة</p>
+          <p className="text-slate-500 mb-6">هذه الصفحة مخصصة للمشرفين</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
@@ -176,8 +165,7 @@ export default function AdminPage() {
       </main>
     );
   }
-
-  // لوحة المشرف
+    
   return (
     <main className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200">
@@ -195,7 +183,7 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
           <p className="text-indigo-700 text-sm">
-            👋 مرحباً <strong>{user.email}</strong> | لديك <strong>{suggestions.length}</strong> اقتراح قيد المراجعة
+          مرحباً <strong>{user.email}</strong> | لديك <strong>{suggestions.length}</strong> اقتراح قيد المراجعة
           </p>
         </div>
 
