@@ -16,6 +16,7 @@ export default function SubmitPage() {
     url: '',
     category: '',
     description: '',
+    price: 'free',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -56,6 +57,7 @@ export default function SubmitPage() {
             url: formData.url,
             category: formData.category,
             description: formData.description,
+            price: formData.price,
             user_id: user?.id || null,
           },
         ]);
@@ -195,6 +197,19 @@ export default function SubmitPage() {
                 placeholder="شو بتسوي هاي الأداة؟"
               />
             </div>
+            <div>
+             <label className="block text-sm font-medium text-slate-700 mb-1.5">التكلفة</label>
+             <select
+             required
+             value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+             >
+             <option value="free">مجاني</option>
+             <option value="freemium">مجاني + مدفوع</option>
+            <option value="paid">مدفوع</option>
+          </select>
+        </div>
 
             <button
               type="submit"
