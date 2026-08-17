@@ -10,6 +10,7 @@ interface Suggestion {
   url: string;
   description: string | null;
   category: string | null;
+  price: string | null;
   status: string;
   created_at: string;
 }
@@ -68,7 +69,7 @@ export default function AdminPage() {
         url: suggestion.url,
         description: suggestion.description,
         category: suggestion.category,
-        price: 'free',
+        price: suggestion.price || 'free',
       }]);
 
       await supabase.from('suggestions').update({ status: 'approved' }).eq('id', suggestion.id);
