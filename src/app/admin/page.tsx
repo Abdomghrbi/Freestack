@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Tool } from '@/types';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2, Shield, ArrowRight } from 'lucide-react';
 
 interface Suggestion {
   id: string;
@@ -12,136 +10,99 @@ interface Suggestion {
   url: string;
   description: string | null;
   category: string | null;
-  status: 'pending' | 'approved' | 'rejected';
+  status: string;
   created_at: string;
 }
 
 export default function AdminPage() {
-  const [user, setUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checking, setChecking] = useState(true);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    checkAdmin();
+    async function init() {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          setLoading(false);
+          return;
+        }
+
+        const role = user.user_metadata?.role;
+        if (role !== 'admin') {
+          setLoading(false);
+          return;
+        }
+
+        setIsAdmin(true);
+
+        const { data, error: dbError } = await supabase
+          .from('suggestions')
+          .select('*')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (dbError) throw dbError;
+
+        setSuggestions(data || []);
+      } catch (err: any) {
+        console.error('Admin error:', err);
+        setError(err?.message || 'حدث خطأ غير متوقع');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    init();
   }, []);
 
-  async function checkAdmin() {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      setChecking(false);
-      return;
-    }
-
-    setUser(user);
-
-    const role = user.user_metadata?.role;
-    if (role === 'admin') {
-      setIsAdmin(true);
-      fetchSuggestions();
-    } else {
-      setChecking(false);
-      setLoading(false);
-    }
-  }
-
-  async function fetchSuggestions() {
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('suggestions')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSuggestions(data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setChecking(false);
-    }
-  }
-
-  async function approveSuggestion(suggestion: Suggestion) {
-    setActionLoading(suggestion.id);
+  async function approve(suggestion: Suggestion) {
     try {
       const supabase = createClient();
 
-      const { error: insertError } = await supabase.from('tools').insert([
-        {
-          name: suggestion.name,
-          url: suggestion.url,
-          description: suggestion.description,
-          category: suggestion.category,
-          price: 'free',
-        },
-      ]);
+      await supabase.from('tools').insert([{
+        name: suggestion.name,
+        url: suggestion.url,
+        description: suggestion.description,
+        category: suggestion.category,
+        price: 'free',
+      }]);
 
-      if (insertError) throw insertError;
-
-      await supabase
-        .from('suggestions')
-        .update({ status: 'approved' })
-        .eq('id', suggestion.id);
+      await supabase.from('suggestions').update({ status: 'approved' }).eq('id', suggestion.id);
 
       setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
-    } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء الموافقة');
-    } finally {
-      setActionLoading(null);
+    } catch (err: any) {
+      alert('خطأ: ' + err?.message);
     }
   }
 
-    async function rejectSuggestion(id: string) {
-    setActionLoading(id);
+  async function reject(id: string) {
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from('suggestions')
-        .update({ status: 'rejected' })
-        .eq('id', id);
-
-      if (error) {
-        alert('خطأ: ' + error.message);
-        throw error;
-      }
-
+      await supabase.from('suggestions').update({ status: 'rejected' }).eq('id', id);
       setSuggestions((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setActionLoading(null);
+    } catch (err: any) {
+      alert('خطأ: ' + err?.message);
     }
-    }
+  }
 
-  if (checking) {
+  if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+        <p className="text-slate-400">جاري التحميل...</p>
       </main>
     );
-  
-  if (!user) {
+  }
+
+  if (error) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
-          <Shield className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">تسجيل الدخول مطلوب</h2>
-          <p className="text-slate-500 mb-6">يجب تسجيل الدخول للوصول لهذه الصفحة</p>
-          <Link
-            href="/login?redirect=/admin"
-            className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
-          >
-            تسجيل الدخول
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+        <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+          <p className="text-red-500 mb-4">{error}</p>
+          <Link href="/" className="text-indigo-600 hover:underline">العودة</Link>
         </div>
       </main>
     );
@@ -151,100 +112,55 @@ export default function AdminPage() {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
-          <Shield className="w-16 h-16 text-red-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">وصول مرفوض</h2>
-          <p className="text-slate-500 mb-6">هذه الصفحة مخصصة للمشرفين</p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
-          >
-            العودة للرئيسية
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <p className="text-2xl mb-2">🛡️</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">وصول مرفوض</h2>
+          <p className="text-slate-500 mb-6">ليس لديك صلاحية الوصول</p>
+          <Link href="/" className="bg-slate-900 text-white px-6 py-2 rounded-xl text-sm">العودة</Link>
         </div>
       </main>
     );
   }
-    
+
   return (
     <main className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-indigo-600" />
-            <h1 className="text-xl font-bold text-slate-900">لوحة المشرف</h1>
-          </div>
-          <Link href="/" className="text-sm text-slate-500 hover:text-slate-900">
-            ← العودة للموقع
-          </Link>
+      <header className="bg-white border-b border-slate-200 px-4 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <h1 className="text-lg font-bold text-slate-900">لوحة المشرف</h1>
+          <Link href="/" className="text-sm text-slate-500">← العودة</Link>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
-          <p className="text-indigo-700 text-sm">
-          مرحباً <strong>{user.email}</strong> | لديك <strong>{suggestions.length}</strong> اقتراح قيد المراجعة
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <p className="text-sm text-slate-500 mb-4">اقتراحات معلقة: {suggestions.length}</p>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-          </div>
-        ) : suggestions.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
-            <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">لا توجد اقتراحات معلقة</h2>
-            <p className="text-slate-500">جميع الاقتراحات تمت مراجعتها</p>
+        {suggestions.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+            <p className="text-slate-400">لا توجد اقتراحات معلقة ✅</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {suggestions.map((suggestion) => (
-              <div key={suggestion.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">{suggestion.name}</h3>
-                    <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs mt-1">
-                      {suggestion.category || 'بدون تصنيف'}
-                    </span>
-                  </div>
-                  <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">
-                    قيد المراجعة
-                  </span>
+          <div className="space-y-3">
+            {suggestions.map((s) => (
+              <div key={s.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-slate-900">{s.name}</h3>
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">معلق</span>
                 </div>
-
-                <p className="text-slate-600 text-sm mb-2">{suggestion.description || 'بدون وصف'}</p>
-                <a
-                  href={suggestion.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 text-sm hover:underline mb-4 block"
-                >
-                  {suggestion.url}
-                </a>
-
+                <p className="text-xs text-slate-500 mb-1">{s.category || 'بدون تصنيف'}</p>
+                <p className="text-sm text-slate-600 mb-3">{s.description || 'بدون وصف'}</p>
+                <a href={s.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 block mb-3">{s.url}</a>
+                
                 <div className="flex gap-2">
                   <button
-                    onClick={() => approveSuggestion(suggestion)}
-                    disabled={actionLoading === suggestion.id}
-                    className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    onClick={() => approve(s)}
+                    className="flex-1 bg-emerald-600 text-white text-sm py-2 rounded-lg hover:bg-emerald-700"
                   >
-                    {actionLoading === suggestion.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <CheckCircle className="w-4 h-4" />
-                        موافقة
-                      </>
-                    )}
+                    ✅ موافقة
                   </button>
                   <button
-                    onClick={() => rejectSuggestion(suggestion.id)}
-                    disabled={actionLoading === suggestion.id}
-                    className="flex-1 bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-xl font-medium hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    onClick={() => reject(s.id)}
+                    className="flex-1 bg-red-50 text-red-600 border border-red-200 text-sm py-2 rounded-lg hover:bg-red-100"
                   >
-                    <XCircle className="w-4 h-4" />
-                    رفض
+                    ❌ رفض
                   </button>
                 </div>
               </div>
@@ -254,5 +170,4 @@ export default function AdminPage() {
       </div>
     </main>
   );
- }
 }
