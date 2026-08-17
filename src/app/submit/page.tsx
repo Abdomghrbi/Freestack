@@ -65,8 +65,8 @@ export default function SubmitPage() {
       if (insertError) throw insertError;
 
       setSuccess(true);
-      setFormData({ name: '', url: '', category: '', description: '' });
-    } catch (err: any) {
+      setFormData({ name: '', url: '', category: '', description: '', price: 'free' });
+        } catch (err: any) {
       setError(err.message || 'حدث خطأ، حاول مرة أخرى');
     } finally {
       setLoading(false);
