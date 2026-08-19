@@ -306,7 +306,7 @@ export default function ToolDetailPage() {
         </div>
             <MessageCircle className="w-5 h-5" />
             أضف تقييمك
-          </h2>
+  
 
           {submitted && (
             <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-4 text-sm">
