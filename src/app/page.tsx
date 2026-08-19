@@ -52,17 +52,36 @@ export default function Home() {
     setFilteredTools(result);
   }, [activeFilter, searchQuery, tools]);
 
-  async function fetchTools() {
+    async function fetchTools() {
     try {
       const supabaseClient = createClient();
-      const { data, error } = await supabaseClient
+
+      const { data: toolsData, error: toolsError } = await supabaseClient
         .from('tools')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setTools(data || []);
-      setFilteredTools(data || []);
+      if (toolsError) throw toolsError;
+
+      const { data: reviewsData, error: reviewsError } = await supabaseClient
+        .from('reviews')
+        .select('tool_id, rating');
+
+      if (reviewsError) throw reviewsError;
+
+      const toolsWithStats = (toolsData || []).map((tool) => {
+        const toolReviews = (reviewsData || []).filter((r) => r.tool_id === tool.id);
+        const reviewCount = toolReviews.length;
+        const avgRating =
+          reviewCount > 0
+            ? toolReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+            : 0;
+
+        return { ...tool, reviewCount, avgRating };
+      });
+
+      setTools(toolsWithStats);
+      setFilteredTools(toolsWithStats);
     } catch (err) {
       console.error('Error fetching tools:', err);
     } finally {
@@ -164,7 +183,11 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
+              <ToolCard
+              key={tool.id}
+             tool={tool}
+            reviewCount={(tool as any).reviewCount || 0}
+            avgRating={(tool as any).avgRating || 0} />
             ))}
           </div>
         )}
