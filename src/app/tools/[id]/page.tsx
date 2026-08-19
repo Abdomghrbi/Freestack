@@ -73,12 +73,18 @@ export default function ToolDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [captchaValid, setCaptchaValid] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
+  const [hasReviewed, setHasReviewed] = useState(false);
+  
   useEffect(() => {
-    if (id) {
-      fetchToolAndReviews();
+  if (id) {
+    fetchToolAndReviews();
+  
+    const reviewed = JSON.parse(localStorage.getItem('freestack_reviews') || '[]');
+    if (reviewed.includes(id)) {
+      setHasReviewed(true);
     }
-  }, [id]);
+  }
+}, [id]);
 
   async function fetchToolAndReviews() {
     try {
@@ -135,6 +141,11 @@ export default function ToolDetailPage() {
       }
 
       setReviewForm({ rating: 5, comment: '' });
+      const reviewed = JSON.parse(localStorage.getItem('freestack_reviews') || '[]');
+      reviewed.push(id);
+      localStorage.setItem('freestack_reviews', JSON.stringify(reviewed));
+      
+      setHasReviewed(true);
       setSubmitted(true);
       fetchToolAndReviews();
       setTimeout(() => setSubmitted(false), 3000);
@@ -224,6 +235,75 @@ export default function ToolDetailPage() {
         {/* نموذج التقييم */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6">
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            أضف تقييمك
+          </h2>
+
+          {hasReviewed ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center">
+              <p className="text-emerald-700 font-medium">
+                ✓ لقد قيّمت هذه الأداة مسبقاً. شكراً لك!
+              </p>
+            </div>
+          ) : (
+            <>
+              {submitted && (
+                <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-4 text-sm">
+                  ✓ تم إرسال تقييمك بنجاح!
+                </div>
+              )}
+
+              <form onSubmit={submitReview} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">التقييم</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                        className="focus:outline-none"
+                      >
+                        <Star
+                          className={`w-8 h-8 transition-colors ${
+                            star <= reviewForm.rating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-slate-200'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">تعليقك (اختياري)</label>
+                  <textarea
+                    rows={3}
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                    placeholder="شارك تجربتك مع هاي الأداة..."
+                  />
+                </div>
+
+                <SimpleCaptcha onValidate={setCaptchaValid} />
+
+                <button
+                  type="submit"
+                  disabled={!captchaValid || submitting}
+                  className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'إرسال التقييم'
+                  )}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
             <MessageCircle className="w-5 h-5" />
             أضف تقييمك
           </h2>
