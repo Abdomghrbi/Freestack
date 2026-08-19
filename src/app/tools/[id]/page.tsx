@@ -7,7 +7,6 @@ import { Star, ExternalLink, ThumbsUp, Loader2, MessageCircle } from 'lucide-rea
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-
 function SimpleCaptcha({ onValidate }: { onValidate: (isValid: boolean) => void }) {
   const [num1, setNum1] = useState(0);
   const [num2, setNum2] = useState(0);
@@ -74,22 +73,21 @@ export default function ToolDetailPage() {
   const [captchaValid, setCaptchaValid] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
-  
+
   useEffect(() => {
-  if (id) {
-    fetchToolAndReviews();
-  
-    const reviewed = JSON.parse(localStorage.getItem('freestack_reviews') || '[]');
-    if (reviewed.includes(id)) {
-      setHasReviewed(true);
+    if (id) {
+      fetchToolAndReviews();
+
+      const reviewed = JSON.parse(localStorage.getItem('freestack_reviews') || '[]');
+      if (reviewed.includes(id)) {
+        setHasReviewed(true);
+      }
     }
-  }
-}, [id]);
+  }, [id]);
 
   async function fetchToolAndReviews() {
     try {
       const supabase = createClient();
-      
       const { data: toolData, error: toolError } = await supabase
         .from('tools')
         .select('*')
@@ -130,29 +128,24 @@ export default function ToolDetailPage() {
           rating: reviewForm.rating,
           comment: reviewForm.comment || null,
           user_id: null,
-                  },
+        },
       ]);
 
-  
-          if (error) {
-        console.error('Review insert error:', error);
-        alert('خطأ: ' + error.message);
-        throw error;
-      }
+      if (error) throw error;
 
       setReviewForm({ rating: 5, comment: '' });
+      setSubmitted(true);
+
       const reviewed = JSON.parse(localStorage.getItem('freestack_reviews') || '[]');
       reviewed.push(id);
       localStorage.setItem('freestack_reviews', JSON.stringify(reviewed));
-      
       setHasReviewed(true);
-      setSubmitted(true);
+
       fetchToolAndReviews();
       setTimeout(() => setSubmitted(false), 3000);
-      } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      alert('حدث خطأ: ' + (err?.message || 'غير معروف'));
-      } finally {
+    } finally {
       setSubmitting(false);
     }
   }
@@ -303,65 +296,6 @@ export default function ToolDetailPage() {
               </form>
             </>
           )}
-        </div>
-            <MessageCircle className="w-5 h-5" />
-            أضف تقييمك
-  
-
-          {submitted && (
-            <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-4 text-sm">
-              ✓ تم إرسال تقييمك بنجاح!
-            </div>
-          )}
-
-          <form onSubmit={submitReview} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">التقييم</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                    className="focus:outline-none"
-                  >
-                    <Star
-                      className={`w-8 h-8 transition-colors ${
-                        star <= reviewForm.rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-slate-200'
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">تعليقك (اختياري)</label>
-              <textarea
-                rows={3}
-                value={reviewForm.comment}
-                onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
-                placeholder="شارك تجربتك مع هاي الأداة..."
-              />
-            </div>
-
-            <SimpleCaptcha onValidate={setCaptchaValid} />
-
-            <button
-              type="submit"
-              disabled={!captchaValid || submitting}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                'إرسال التقييم'
-              )}
-            </button>
-          </form>
         </div>
 
         {/* قائمة التقييمات */}
