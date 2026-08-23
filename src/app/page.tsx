@@ -5,9 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { Tool } from '@/types';
 import ToolCard from '@/components/cards/ToolCard';
 import FilterBar from '@/components/FilterBar';
-import { LogOut, Search, Zap, Plus, LayoutGrid, List } from 'lucide-react';
+import { LogOut, Search, Zap, Plus } from 'lucide-react';
 import Link from 'next/link';
-
 
 export default function Home() {
   const [tools, setTools] = useState<Tool[]>([]);
@@ -16,8 +15,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await createClient().auth.getUser();
@@ -54,7 +52,7 @@ export default function Home() {
     setFilteredTools(result);
   }, [activeFilter, searchQuery, tools]);
 
-    async function fetchTools() {
+  async function fetchTools() {
     try {
       const supabaseClient = createClient();
 
@@ -163,61 +161,26 @@ export default function Home() {
         <div className="mb-6">
           <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
         </div>
-        
-        {/* تبديل أسلوب العرض */}
-        <div className="flex items-center justify-end mb-4">
-          <div className="bg-white border border-slate-200 rounded-lg p-1 flex gap-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-              title="شبكة"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-              title="قائمة"
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-        
+
         {/* Stats */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-slate-500">
             {filteredTools.length} أداة {activeFilter !== 'all' && `في "${activeFilter}"`}
           </p>
         </div>
+
         {/* Grid */}
         {loading ? (
-          viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-64 animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-20 animate-pulse" />
-              ))}
-            </div>
-          )
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl h-64 animate-pulse" />
+            ))}
+          </div>
         ) : filteredTools.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-slate-400 text-lg">لا توجد أدوات مطابقة</p>
           </div>
-        ) : viewMode === 'grid' ? (
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTools.map((tool) => (
               <ToolCard
@@ -225,19 +188,6 @@ export default function Home() {
                 tool={tool}
                 reviewCount={(tool as any).reviewCount || 0}
                 avgRating={(tool as any).avgRating || 0}
-                viewMode="grid"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredTools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                reviewCount={(tool as any).reviewCount || 0}
-                avgRating={(tool as any).avgRating || 0}
-                viewMode="list"
               />
             ))}
           </div>
