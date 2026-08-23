@@ -67,7 +67,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      {/* Header */}
+    
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -117,7 +117,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Search */}
+          
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -131,21 +131,21 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Content */}
+    
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Filter */}
+      
         <div className="mb-6">
           <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
         </div>
 
-        {/* Stats */}
+      
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-slate-500">
             {filteredTools.length} أداة {activeFilter !== 'all' && `في "${activeFilter}"`}
           </p>
         </div>
 
-        {/* Grid */}
+      
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
