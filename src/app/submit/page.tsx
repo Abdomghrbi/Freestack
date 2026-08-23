@@ -19,6 +19,8 @@ export default function SubmitPage() {
     price: 'free',
   });
   const [loading, setLoading] = useState(false);
+  const [urlExists, setUrlExists] = useState<'none' | 'tool' | 'suggestion'>('none');
+  const [checkingUrl, setCheckingUrl] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -73,6 +75,48 @@ export default function SubmitPage() {
     }
   }
 
+  async function checkUrlExists(url: string) {
+  if (!url.trim() || !url.startsWith('http')) {
+    setUrlExists('none');
+    return;
+  }
+  setCheckingUrl(true);
+  try {
+    const supabase = createClient();
+    
+    const { data: toolData } = await supabase
+      .from('tools')
+      .select('id')
+      .eq('url', url)
+      .limit(1);
+
+    if (toolData && toolData.length > 0) {
+      setUrlExists('tool');
+      setCheckingUrl(false);
+      return;
+    }
+
+    const { data: suggestionData } = await supabase
+      .from('suggestions')
+      .select('id')
+      .eq('url', url)
+      .eq('status', 'pending')
+      .limit(1);
+
+    if (suggestionData && suggestionData.length > 0) {
+      setUrlExists('suggestion');
+      setCheckingUrl(false);
+      return;
+    }
+
+    setUrlExists('none');
+  } catch {
+    setUrlExists('none');
+  } finally {
+    setCheckingUrl(false);
+  }
+  }
+
   if (checkingAuth) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -112,7 +156,7 @@ export default function SubmitPage() {
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
           <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-slate-900 mb-2">تم الإرسال!</h2>
-          <p className="text-slate-500 mb-6">شكراً لاقتراحك. رح نراجع الأداة ونضيفها قريباً.</p>
+          <p className="text-slate-500 mb-6">شكراً لاقتراحك. سنراجع الأداة ونضيفها قريباً.</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
@@ -163,15 +207,28 @@ export default function SubmitPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">رابط الموقع</label>
               <input
-                type="url"
-                required
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                placeholder="https://example.com"
-              />
+               type="url"
+               required
+               value={formData.url}
+              onChange={(e) => {
+              setFormData({ ...formData, url: e.target.value });
+              setUrlExists('none'); 
+             }}
+              onBlur={(e) => checkUrlExists(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              placeholder="https://example.com"
+             />
             </div>
 
+            {urlExists !== 'none' && (
+          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-sm">
+           {urlExists === 'tool'
+          ? '⚠️ هذه الأداة موجودة مسبقاً في الموقع!'
+          : '⚠️ هذا الاقتراح قيد المراجعة مسبقاً!'}
+           </div>
+      
+          )}
+            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">التصنيف</label>
               <select
