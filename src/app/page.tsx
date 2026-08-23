@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getTools } from './actions';
 import { createClient } from '@/lib/supabase/client';
 import { Tool } from '@/types';
 import ToolCard from '@/components/cards/ToolCard';
