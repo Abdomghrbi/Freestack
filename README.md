@@ -28,23 +28,6 @@ FreeStack هي منصة ويب مجتمعية تجمع الأدوات والتط
 
 `Next.js 16` · `TypeScript` · `Tailwind CSS` · `Supabase` · `Vercel`
 
-## 🏗️ هيكل المشروع
-freestack/
-├── src/
-│   ├── app/                 # صفحات Next.js (App Router)
-│   │   ├── page.tsx         # الصفحة الرئيسية
-│   │   ├── login/           # تسجيل الدخول
-│   │   ├── submit/          # اقتراح أداة جديدة
-│   │   ├── admin/           # لوحة المشرف
-│   │   └── tools/[id]/      # صفحة تفاصيل الأداة
-│   ├── components/          # المكونات المشتركة
-│   │   ├── cards/           # بطاقة الأداة
-│   │   └── FilterBar.tsx    # شريط الفلترة
-│   ├── lib/supabase/        # إعدادات Supabase
-│   └── types/               # أنواع TypeScript
-└── public/                  # الملفات العامة
-
-
 
 ## 🚀 الرابط
 
