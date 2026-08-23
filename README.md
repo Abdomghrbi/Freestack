@@ -1,4 +1,4 @@
-&lt;div align="center"&gt;
+
 
 # ⚡ FreeStack
 
@@ -6,7 +6,7 @@
 
 
 
-&lt;/div&gt;
+
 
 ## عن المشروع
 
