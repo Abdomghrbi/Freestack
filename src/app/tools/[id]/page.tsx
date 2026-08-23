@@ -189,7 +189,7 @@ export default function ToolDetailPage() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* معلومات الأداة */}
+      
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -225,7 +225,7 @@ export default function ToolDetailPage() {
           </a>
         </div>
 
-        {/* نموذج التقييم */}
+        
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6">
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
@@ -276,7 +276,7 @@ export default function ToolDetailPage() {
                     value={reviewForm.comment}
                     onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
-                    placeholder="شارك تجربتك مع هاي الأداة..."
+                    placeholder="شارك تجربتك مع هذه الأداة..."
                   />
                 </div>
 
@@ -298,14 +298,14 @@ export default function ToolDetailPage() {
           )}
         </div>
 
-        {/* قائمة التقييمات */}
+      
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
           <h2 className="text-xl font-bold text-slate-900 mb-4">
             التقييمات ({reviews.length})
           </h2>
 
           {reviews.length === 0 ? (
-            <p className="text-slate-400 text-center py-8">لا توجد تقييمات بعد. كن الأول!</p>
+            <p className="text-slate-400 text-center py-8">لا توجد تقييمات بعد. أضف تقييم!</p>
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
