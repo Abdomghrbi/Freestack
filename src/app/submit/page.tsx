@@ -221,7 +221,7 @@ export default function SubmitPage() {
             </div>
 
             {urlExists !== 'none' && (
-          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-sm">
+          <div className="bg-red-20 border border-red-100 text-red-400 p-3 rounded-xl text-sm">
            {urlExists === 'tool'
           ? 'هذه الأداة موجودة بالفعل، حاول إضافة أداة أخرى'
           : '⚠️ هذه الأداة قيد المراجعة'}
