@@ -223,8 +223,8 @@ export default function SubmitPage() {
             {urlExists !== 'none' && (
           <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-sm">
            {urlExists === 'tool'
-          ? '⚠️ هذه الأداة موجودة مسبقاً في الموقع!'
-          : '⚠️ هذا الاقتراح قيد المراجعة مسبقاً!'}
+          ? 'هذه الأداة موجودة بالفعل، حاول إضافة أداة أخرى'
+          : '⚠️ هذه الأداة قيد المراجعة'}
            </div>
       
           )}
@@ -268,20 +268,21 @@ export default function SubmitPage() {
           </select>
         </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  جاري الإرسال...
-                </>
-              ) : (
-                'إرسال الاقتراح'
-              )}
-            </button>
+           <button
+            type="submit"
+            disabled={loading || urlExists !== 'none' || checkingUrl}
+           className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+         >
+          {checkingUrl ? (
+           'جاري التحقق...'
+           ) : loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+           ) : urlExists !== 'none' ? (
+            'لا يمكن الإرسال'
+            ) : (
+             'إرسال الاقتراح'
+           )}
+          </button>
           </form>
         </div>
       </div>
