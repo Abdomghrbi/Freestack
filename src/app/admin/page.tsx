@@ -64,20 +64,21 @@ export default function AdminPage() {
     try {
       const supabase = createClient();
 
-      const { data: existing } = await supabase
+
+      const { data: existingTools } = await supabase
         .from('tools')
         .select('id')
         .eq('url', suggestion.url)
-        .single();
+        .limit(1);
 
-      if (existing) {
-        alert('هذه الأداة موجودة مسبقاً في الموقع! سيتم رفض الاقتراح.');
-        // رفض الاقتراح تلقائياً لأنه مكرر
+      if (existingTools && existingTools.length > 0) {
+        alert('⚠️ هذه الأداة موجودة مسبقاً في الموقع! سيتم رفض الاقتراح تلقائياً.');
         await supabase.from('suggestions').update({ status: 'rejected' }).eq('id', suggestion.id);
         setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
         return;
       }
 
+  
       const { error: insertError } = await supabase.from('tools').insert([{
         name: suggestion.name,
         url: suggestion.url,
@@ -88,13 +89,14 @@ export default function AdminPage() {
 
       if (insertError) throw insertError;
 
+ 
       await supabase.from('suggestions').update({ status: 'approved' }).eq('id', suggestion.id);
 
       setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
     } catch (err: any) {
       alert('خطأ: ' + err?.message);
     }
-  }
+  }}
 
   async function reject(id: string) {
     try {
