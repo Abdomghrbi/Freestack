@@ -1,8 +1,11 @@
 'use server';
 
+import { unstable_noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
 export async function getTools() {
+  unstable_noStore(); // ← ما تخزن أبداً
+  
   const supabase = await createClient();
   
   const { data: toolsData } = await supabase
