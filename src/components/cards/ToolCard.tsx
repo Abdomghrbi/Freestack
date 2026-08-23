@@ -1,7 +1,7 @@
 'use client';
 
 import { Tool } from '@/types';
-import { ExternalLink, Star, MessageCircle } from 'lucide-react';
+import { ExternalLink, Star, MessageCircle, Video, Bot, Palette, Code, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 interface ToolCardProps {
@@ -23,16 +23,25 @@ export default function ToolCard({ tool, reviewCount = 0, avgRating = 0 }: ToolC
     freemium: 'مجاني + مدفوع',
   };
 
+  const getCategoryIcon = () => {
+    switch (tool.category) {
+      case 'AI Video':
+        return <Video className="w-8 h-8 text-slate-600" />;
+      case 'AI Chat':
+        return <Bot className="w-8 h-8 text-slate-600" />;
+      case 'Design':
+        return <Palette className="w-8 h-8 text-slate-600" />;
+      case 'Development':
+        return <Code className="w-8 h-8 text-slate-600" />;
+      default:
+        return <Zap className="w-8 h-8 text-slate-600" />;
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
       <div className="h-20 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center relative">
-        <span className="text-3xl">
-          {tool.category === 'AI Video' && '🎬'}
-          {tool.category === 'AI Chat' && '🤖'}
-          {tool.category === 'Design' && '🎨'}
-          {tool.category === 'Development' && '💻'}
-          {!['AI Video', 'AI Chat', 'Design', 'Development'].includes(tool.category) && '⚡'}
-        </span>
+        {getCategoryIcon()}
         <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${priceColors[tool.price]}`}>
           {priceLabels[tool.price]}
         </div>
