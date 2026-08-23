@@ -4,7 +4,7 @@ import { unstable_noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
 export async function getTools() {
-  unstable_noStore(); // ← ما تخزن أبداً
+  unstable_noStore();
   
   const supabase = await createClient();
   
