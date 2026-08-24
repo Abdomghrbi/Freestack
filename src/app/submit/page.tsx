@@ -251,7 +251,7 @@ export default function SubmitPage() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
-                placeholder="شو بتسوي هاي الأداة؟"
+                placeholder="مافائدة هذه الأداة؟"
               />
             </div>
             <div>
