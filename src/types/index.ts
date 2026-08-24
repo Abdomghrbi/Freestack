@@ -12,7 +12,7 @@ export interface Tool {
 export interface Review {
   id: string;
   tool_id: string;
-  user_id: string;
+  user_id: string | null;
   visitor_id: string | null;
   ip_address: string | null;
   rating: number;
