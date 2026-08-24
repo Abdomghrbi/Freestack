@@ -13,6 +13,8 @@ export interface Review {
   id: string;
   tool_id: string;
   user_id: string;
+  visitor_id: string | null;
+  ip_address: string | null;
   rating: number;
   comment: string | null;
   helpful_count: number;
